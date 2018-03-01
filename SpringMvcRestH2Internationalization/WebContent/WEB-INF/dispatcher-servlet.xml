@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:jpa="http://www.springframework.org/schema/data/jpa"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc
+	 	http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/data/jpa 
+		http://www.springframework.org/schema/data/jpa/spring-jpa.xsd
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<mvc:annotation-driven></mvc:annotation-driven>
+	<context:annotation-config></context:annotation-config>
+	
+	<context:component-scan base-package="com"></context:component-scan>
+	
+	<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<property name="prefix" value="/WEB-INF/view/"></property>
+		<property name="suffix" value=".jsp"></property>
+	</bean>
+	
+	<bean id="bds" class="org.apache.tomcat.dbcp.dbcp2.BasicDataSource">
+		<property name="driverClassName" value="org.h2.Driver" />
+		<property name="url" value="jdbc:h2:mem:test" />
+<!-- 		<property name="password" value="oracle" />
+		<property name="username" value="system" /> -->
+		<property name="maxTotal" value="20" />
+		<property name="maxIdle" value="15" />
+		<property name="maxWaitMillis" value="5000" />	
+	</bean>
+	
+	<bean id="entityManagerFactory" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"> 
+		<property name="dataSource" ref="bds" /> 
+		<property name="packagesToScan" value="com.dto"/> 
+		<property name="jpaVendorAdapter"> 
+			<bean class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter"> 
+			<property name="generateDdl" value="true" /> 
+			<property name="showSql" value="true"/> 
+			<property name="databasePlatform" value="org.hibernate.dialect.H2Dialect"/> 
+			<property name="database" value="H2"/> 
+			</bean> 
+		</property>
+		<property name="jpaProperties">
+		<value>
+			hibernate.hbm2ddl.auto = create
+		</value>
+		</property>
+	</bean>
+	
+	<jpa:repositories base-package="com.repository"></jpa:repositories>
+	
+<bean id="transactionManager" class="org.springframework.orm.jpa.JpaTransactionManager">
+	<property name="entityManagerFactory" ref="entityManagerFactory"></property></bean>
+	
+	<tx:annotation-driven/>
+	
+	
+	
+	
+	
+	<!-- For internationalization -->
+	<bean id="messageSource" class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basenames" value="message"></property>
+		<!-- <property name="defaultEncoding" value=""></property> -->
+	</bean>
+	
+	<bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver">
+		<property name="defaultLocale" value="en"></property>
+		<property name="cookieMaxAge" value="36000"></property>
+		<property name="cookieName" value="myLocale"></property>
+	</bean>
+	
+	<mvc:interceptors>
+	<bean class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
+		<property name="paramName" value="language"></property>
+	</bean>
+	</mvc:interceptors>
+</beans>
+
+
