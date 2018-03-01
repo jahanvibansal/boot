@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
-<meta charset="ISO-8859-1">
+<meta charset="ISO-8859-1"/>
 <title>Student Info</title>
 <link rel="stylesheet"  th:href="@{/css/styles.css}"/>
 </head>
 <body>
 <h1>Students</h1>
 
-<form action="#" th:action="@{/students/}" th:object="${student}">
-
-
+<form action="#" th:action="@{/students}" th:object="${student}" method="post">
+ <input type="text" th:field="*{stid}"/><br/>
+<label th:if="${#fields.hasErrors('stid')}" th:class="'error'" >Enter id</label>
+<input type="text" th:field="*{name}"/><br/>
+<label th:if="${#fields.hasErrors('name')}" th:class="'error'" >Enter name</label>
+<input type="text" th:field="*{quote}"/><br/>
+<label th:if="${#fields.hasErrors('quote')}" th:class="'error'" >Enter quote</label>
+<input type="submit" th:value="submit"/>
 </form>
 </body>
 </html>

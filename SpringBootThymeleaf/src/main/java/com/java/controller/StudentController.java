@@ -1,7 +1,8 @@
 package com.java.controller;
 
 import java.util.List;
-import java.util.stream.Collectors;
+
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,20 +12,22 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
-import com.java.model.Quotes;
 import com.java.model.Student;
 import com.java.repository.StudentRepository;
 
-@RestController
+@Controller
 @RequestMapping("/students")
 public class StudentController {
 	
@@ -35,6 +38,7 @@ public class StudentController {
 	public StudentRepository repository;
 	
 	@GetMapping
+	@ResponseBody
 	public Page<Student> getStudentsPerPage(@RequestParam(value="page", required=false) Integer page, 
 			@RequestParam(value="size", required=false) Integer size,
 			@RequestParam(value="namelike", required=false) String name){
@@ -49,35 +53,30 @@ public class StudentController {
 	}
 	
 	@GetMapping("/{name}")
+	@ResponseBody
 	public List<Student> getStudentByName(@PathVariable("name") String name){
 		System.out.println("Fetching data for "+ name);
 		return repository.findByName(name);
 	}
 	
-	@GetMapping("{name}/quote")
-	public List<String> getQuotes(@PathVariable("name")String username){
-		return repository.findByName(username).stream().map(Student::getQuote).collect(Collectors.toList());
+	@GetMapping("/update")
+	public String updateStudent(ModelMap model){
+		model.addAttribute("student", new Student());
+		return "studentsInfo";
 	}
-	/*@GetMapping("/marks/{marks}")
-	public ResponseEntity<List<Student>> getStudentsByMarks(@PathVariable("marks") float marks) {
-		List<Student> list=  (List<Student>) repository.getStudentsWithMarksGreaterThan(marks);
-		return new ResponseEntity<List<Student>>(list, HttpStatus.OK);
-	}*/
-	
 	
 	
 	@PostMapping
-	public List<String> add(@RequestBody final Quotes quotes){
-		quotes.getQuotes().stream().forEach(quote->repository.save(new Student(quotes.getName(), quote)));
-		return quotes.getQuotes();
+	public ModelAndView updateStudent(@Valid Student student, BindingResult result) {
+		System.out.println(student.getStid());
+		repository.save(student);
+		return new ModelAndView("student");
 	}
-	
-	
 	
 	@DeleteMapping("/{name}")
 	public ResponseEntity deleteStudent(@PathVariable("name")String name) {
 		List<Student> students= repository.findByName(name);
-	 repository.delete(students);
+		repository.delete(students);
 		return new ResponseEntity(HttpStatus.OK);
 	}
 }
