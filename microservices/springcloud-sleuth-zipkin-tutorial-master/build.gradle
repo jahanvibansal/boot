@@ -1,0 +1,66 @@
+buildscript {
+  repositories {
+    mavenCentral()
+  }
+  dependencies {
+    classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.5.2.RELEASE'
+    classpath 'io.spring.gradle:dependency-management-plugin:0.5.2.RELEASE'
+  }
+}
+
+apply plugin: 'idea'
+
+allprojects {
+  apply plugin: 'java'
+  sourceCompatibility = 1.8
+  targetCompatibility = 1.8
+}
+
+subprojects {
+  apply plugin: 'application'
+  apply plugin: 'org.springframework.boot'
+  apply plugin: 'io.spring.dependency-management'
+
+  repositories {
+    mavenCentral()
+  }
+
+  dependencyManagement {
+    imports {
+      mavenBom 'org.springframework.cloud:spring-cloud-sleuth:1.1.3.RELEASE'
+    }
+  }
+ 
+  dependencies {
+    compile 'org.springframework.boot:spring-boot-starter-web'
+    compile 'org.springframework.cloud:spring-cloud-starter-sleuth'
+    compile 'org.springframework.cloud:spring-cloud-starter-zipkin'
+    testCompile('junit:junit')
+  }
+}
+
+task dockerzipkin(type: Exec) {
+  executable "bash"
+  args "-c", "docker run -d -p 9411:9411 openzipkin/zipkin:1.26"
+  doLast {
+    println "-----> Successfully set up zipkin container - visit http://localhost:9411 in your browser <-----"
+  }
+}
+
+task stopzipkin(type: Exec) {
+  executable "bash"
+  args "-c", "docker rm \$(docker stop \$(docker ps -a -q --filter ancestor=openzipkin/zipkin:1.26 --format='{{.ID}}'))"
+  doLast {
+    println "-----> Successfully stopped and removed all zipkin containers <-----"
+  }
+}
+
+task printJars() {
+  def jars = ['applications/service-lookup/build/libs/applications/service-lookup.jar', 'applications/service-quote/build/libs/applications/service-quote.jar', 'applications/service-middleman/build/libs/applications/service-middleman.jar']
+
+  doLast {
+    jars.each { jar ->
+      println "nohup java -jar ${jar} &"
+    }
+  }
+}

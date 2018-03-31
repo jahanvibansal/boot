@@ -1,0 +1,5 @@
+target/
+.classpath
+.project
+activemq-data/
+camel/

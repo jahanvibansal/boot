@@ -1,0 +1,66 @@
+version: '2'
+
+services:
+
+  eureka:
+    image: microservices-experiments/eureka:0.0.1-SNAPSHOT
+    environment:
+      - EUREKA_HOST=eureka
+      - EUREKA_PORT=8761
+    ports:
+      - "8761:8761"
+
+  zuul:
+    image: microservices-experiments/zuul:0.0.1-SNAPSHOT
+    environment:
+      - EUREKA_HOST=eureka
+      - EUREKA_PORT=8761
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka
+
+  zipkin:
+    image: microservices-experiments/zipkin:0.0.1-SNAPSHOT
+    environment:
+      - EUREKA_HOST=eureka
+      - EUREKA_PORT=8761
+    ports:
+      - "9411:9411"
+    depends_on:
+      - eureka
+
+  product-service:
+    image: microservices-experiments/product-service:0.0.1-SNAPSHOT
+    environment:
+      - EUREKA_HOST=eureka
+      - EUREKA_PORT=8761
+      - SERVER_PORT=8081
+    ports:
+      - "8081:8081"
+    depends_on:
+      - eureka
+
+  account-service:
+    image: microservices-experiments/account-service:0.0.1-SNAPSHOT
+    environment:
+      - EUREKA_HOST=eureka
+      - EUREKA_PORT=8761
+      - SERVER_PORT=8082
+    ports:
+      - "8082:8082"
+    depends_on:
+      - eureka
+
+  order-service:
+    image: microservices-experiments/order-service:0.0.1-SNAPSHOT
+    environment:
+      - EUREKA_HOST=eureka
+      - EUREKA_PORT=8761
+      - SERVER_PORT=8083
+    ports:
+      - "8083:8083"
+    depends_on:
+      - eureka
+      - product-service
+      - account-service
